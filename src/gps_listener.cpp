@@ -54,9 +54,9 @@ void GPSListener::initialize()
 
         if (sender_addr.sin_addr.s_addr == inet_addr(SENDER_IP)) {
 
-            char str[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &(sender_addr.sin_addr.s_addr ), str, INET_ADDRSTRLEN);
-            RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"), "Obtained buffer from IP (%s): \n %s", str, buffer);
+            char senderIPAddr[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &(sender_addr.sin_addr.s_addr ), senderIPAddr, INET_ADDRSTRLEN);
+            RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"), "Obtained buffer from IP (%s): \n %s", senderIPAddr, buffer);
 
             for (std::string sentence : GPSListener::splitByDelimiter(buffer, '$')){
 
