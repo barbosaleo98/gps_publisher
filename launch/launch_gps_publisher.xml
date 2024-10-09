@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="gps_publisher" exec="gps_publisher_node"/>
+    <node pkg="gps_publisher" exec="start_gps_cohda.sh"/>
+</launch>
