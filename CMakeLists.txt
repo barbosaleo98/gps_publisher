@@ -26,8 +26,14 @@ install(PROGRAMS
 
 # Install targets
 install(TARGETS
-${PROJECT_NAME}_node
+  ${PROJECT_NAME}_node
   DESTINATION lib/${PROJECT_NAME}
+)
+
+# Install launch files
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 ament_package()
