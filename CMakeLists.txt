@@ -18,6 +18,12 @@ add_executable(${PROJECT_NAME}_node
 #Link against dependencies
 ament_target_dependencies(${PROJECT_NAME}_node rclcpp rclcpp_components geometry_msgs)
 
+# Install .sh script
+install(PROGRAMS
+  start_gps_cohda.sh
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 # Install targets
 install(TARGETS
 ${PROJECT_NAME}_node
