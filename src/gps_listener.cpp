@@ -38,7 +38,7 @@ void GPSListener::initialize()
         return;
     }
 
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Initialized and starting to receive UDP packets");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Initialized and starting to receive UDP packets in port %d", UDP_PORT);
 
     char buffer[1024];
     socklen_t addr_len = sizeof(sender_addr);
