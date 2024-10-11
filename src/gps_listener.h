@@ -27,6 +27,7 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr publisher_;
 
     std::vector<std::string> splitByDelimiter(const char* charArray, char delimiter);
+    bool isChecksumValid(const char* charArray);
     double convert2Degrees(const std::string &value, std::string direction);
 
 };
