@@ -1,4 +1,5 @@
 #include <string>
+#include <exception>
 #include "gps_listener.h"
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/point.hpp"
@@ -84,10 +85,16 @@ void GPSListener::initialize()
 
                     auto point_msg = geometry_msgs::msg::Point(); 
 
-                    point_msg.x = GPSListener::convert2Degrees(std::get<0>(lat), std::get<1>(lat));
-                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtained lat: %f", point_msg.x);
+                    try{
+                        point_msg.x = GPSListener::convert2Degrees(std::get<0>(lat), std::get<1>(lat));
+                        point_msg.y = GPSListener::convert2Degrees(std::get<0>(lon), std::get<1>(lon));
+                    }
+                    catch(std::exception & exception_obj){
+                        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Conversion fails! Skipping sentence...");
+                        continue;
+                    }
 
-                    point_msg.y = GPSListener::convert2Degrees(std::get<0>(lon), std::get<1>(lon));
+                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtained lat: %f", point_msg.x);
                     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtained lon: %f", point_msg.y);
 
                     publish(point_msg);
@@ -155,9 +162,19 @@ bool GPSListener::isChecksumValid(const char* charArray){
 }
 
 double GPSListener::convert2Degrees(const std::string &value, std::string direction){
-    double degrees = std::stoi(value) / 100;
-    double minutes = std::stod(value) - (degrees * 100);
-    double result = degrees + (minutes / 60);
+    
+    double degrees, minutes, result;
+
+    try{
+        degrees = std::stoi(value) / 100;
+        minutes = std::stod(value) - (degrees * 100);    
+    }
+    catch(const std::exception & excpt){
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Exception in degree conversion due to: %s", excpt.what());
+        throw;
+    }
+    
+    result = degrees + (minutes / 60);
 
     if(direction == "S" || direction == "W"){
         return -result;
