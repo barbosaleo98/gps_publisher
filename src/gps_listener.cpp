@@ -61,6 +61,11 @@ void GPSListener::initialize()
 
                 if (sentence.find("GPRMC") != std::string::npos || sentence.find("GPGGA") != std::string::npos){
 
+                    if(!GPSListener::isChecksumValid(sentence.c_str())){
+                        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Invalid checksum skipping sentence...");
+                       continue; 
+                    }
+
                     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sentence: $%s", sentence.c_str());
 
                     std::tuple<std::string, std::string> lat, lon;
@@ -116,6 +121,37 @@ std::vector<std::string> GPSListener::splitByDelimiter(const char* charArray, ch
     }
     
     return result;
+}
+
+bool GPSListener::isChecksumValid(const char* charArray){
+
+    char checksumByte = 0;
+    int lastChecksumPos = 0;
+
+    // Iterates characters between '$' and '*', calculating the XOR of the consecutive pairs
+    for (int i = 0; charArray[i] != '*'; i++){
+        checksumByte ^= charArray[i];
+        lastChecksumPos = i; 
+    }
+
+    // Splits the obtained checksum Byte into two 4-bit nibbles
+    char checksumNibble1 = (checksumByte&0xF0) >> 4;
+    char checksumNibble2 = (checksumByte&0x0F);
+
+    // Converts the nibbles into ASCII format
+    char nibble1ASCII = (checksumNibble1<=0x9) ? (checksumNibble1+'0') : (checksumNibble1-10+'A'); 
+    char nibble2ASCII = (checksumNibble2<=0x9) ? (checksumNibble2+'0') : (checksumNibble2-10+'A'); 
+
+    // ASCII checksum validation nibbles from the received NMEA sentence (two characters after the '*')
+    char validationNibble1 = charArray[lastChecksumPos+2];
+    char validationNibble2 = charArray[lastChecksumPos+3];
+
+    // Prints ASCII through string-casting for debugging
+    RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"), "Checksum: %s", std::string{nibble1ASCII, nibble2ASCII}.c_str());
+    RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"), "Validation: %s", std::string{validationNibble1,validationNibble2}.c_str());
+
+    // Msg is valid if calculated checksum matches the value informed in the sentence
+    return (nibble1ASCII == validationNibble1) && (nibble2ASCII == validationNibble2);
 }
 
 double GPSListener::convert2Degrees(const std::string &value, std::string direction){
